@@ -2,19 +2,20 @@ import React, { Component } from 'react';
 
 import './GameControls.css'
 
+import SelectInput from '../customInputs/SelectInput/SelectInput'
 // const GameControls = props => {
 class GameControls extends Component {
     render() {
 
         const { startGame, setValue, setColor, running, paused, togglePause, errorMsgs } = { ...this.props }
-        const { paddle1Color, paddle2Color, ballColor } = { ...this.props }
+        const { paddle1Color, paddle2Color, ballColor, passState, ballType } = { ...this.props }
         const pauseText = paused ? 'Resume Game' : 'Pause Game'
         const errorContent = (
             <div className='error'>
                 { errorMsgs.map((err, i) => {
                     try {
                         return <p key={i}>{err.msg}</p>
-                    } catch(err) { }
+                    } catch(err) { return null }
                     }) 
                 }
             </div>
@@ -64,13 +65,28 @@ class GameControls extends Component {
                         name="ballColor"
                     />
                 </div>
-                <button onClick={startGame}>Start Game</button>
+                <SelectInput
+                    name={'ballType'}
+                    passState={passState}
+                    value={ballType}
+                    label='Select ball type: '
+                    classNames='ballType'
+                    options={
+                        [
+                            { name: "small block", value: "small block" },
+                            { name: "large block", value: "large block" },
+                            { name: "small ball", value: "small ball" },
+                            { name: "large ball", value: "large ball" },
+                        ]
+                    }
+                />
+                <button className='start-btn' onClick={startGame}>Start Game</button>
             </div>
         )
         return (
-            <article>
+            <article className='GameControls'>
                 { !running && setup }
-                { running && <button onClick={togglePause}>{pauseText}</button>}
+                { running && <button className='pause-btn' onClick={togglePause}>{pauseText}</button>}
                 
             </article>
         )

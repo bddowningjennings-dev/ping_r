@@ -1,3 +1,18 @@
+.GameControls {
+  width: 750px;
+  margin-bottom: 80px;
+}
+.GameControls button {
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+}
+.GameControls button.start-btn, button.displaying, button.pause-btn {
+  background-color: aliceblue;
+}
+.GameControls button.start-btn:hover, button.displaying:hover, button.pause-btn:hover {
+  background-color: rgba(194, 183, 183, 0.486);
+}
 article .setup {
   display: flex;
   flex-direction: column;
@@ -5,26 +20,38 @@ article .setup {
 article .setup > div {
   display: flex;
   justify-content: space-between;
-  width: 400px;
-  margin-bottom: 5px;
+  /* width: 400px; */
+  width: 100%;
+  margin-bottom: 8px;
   cursor: pointer;
+}
+article .setup > div.SelectInput {
+  cursor: auto;
 }
 article .setup > div.error {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 400px;
+  /* width: 400px; */
   margin-bottom: 5px;
 }
 article .setup > input {
-  width: 400px;
+  width: 100%;
   height: 20px;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   padding: 5px;
 }
 input.hidden {
   display: none;
 }
 div.color-selected {
-  width: 180px;
+  width: 250px;
+  height: 25px;
+  border: 1px solid rgb(204, 201, 201);
+}
+.error > p {
+  color: red;
+}
+.pause-btn {
+  width: 100%;
 }

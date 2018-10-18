@@ -1,0 +1,15 @@
+.GameCanvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.GameCanvas button {
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  width: 750px;
+  background-color: aliceblue;
+}
+.GameCanvas button:hover {
+  background-color: rgba(194, 183, 183, 0.486);
+}

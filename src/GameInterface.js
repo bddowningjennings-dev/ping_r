@@ -13,6 +13,7 @@ const initializeState = props => {
         paddle1Color: '#FFF',
         paddle2Color: '#FFF',
         ballColor: '#FFF',
+        ballType: 'small block',
         errorMsgs: [],
     }
 }
@@ -40,7 +41,7 @@ class GameInterface extends Component {
             if (value <= 0 || isNaN(value)) {
                 value = 10
                 others = errorMsgs.filter(msg => msg && msg.type !== 'maxScore')
-                newError = {type: 'maxScore', msg: `Out of bounds max score value - setting to default of ${value}`}
+                newError = {type: 'maxScore', msg: `Out of bounds max score value (allowed > 0) - setting to default of ${value}`}
             } else {
                 others = errorMsgs.filter(msg => msg && msg.type !== 'maxScore')
             }
@@ -49,7 +50,7 @@ class GameInterface extends Component {
             if (value < 1 || value > 3 || isNaN(value)) {
                 value = 1
                 others = errorMsgs.filter(msg => msg && msg.type !== 'velocity')
-                newError = {type: 'velocity', msg: `Out of bounds velocity value - setting to default of ${value}`}
+                newError = {type: 'velocity', msg: `Out of bounds velocity value (allowed 1-3) - setting to default of ${value}`}
             } else {
                 others = errorMsgs.filter(msg => msg && msg.type !== 'velocity')
             }
@@ -61,8 +62,11 @@ class GameInterface extends Component {
         const { target } = { ...e }
         this.setState(prevState => ({ ...prevState, [target.name]: target.value }))
     }
+    setBallShape = (name, state) => {
+        this.setState(prevState => ({ ...prevState, [name]: state.value }))
+    }
     render() {
-        const { maxScore, velocity, paddle1Color, paddle2Color, ballColor } = { ...this.state };
+        const { maxScore, velocity, paddle1Color, paddle2Color, ballColor, ballType } = { ...this.state };
         const { running, paused, errorMsgs } = { ...this.state };
         const gameCanvasProps = {
             running,
@@ -70,6 +74,7 @@ class GameInterface extends Component {
             paddle1Color,
             paddle2Color,
             ballColor,
+            ballType,
             paused,
             maxScore: maxScore || 10,
             endGame: this.endGame,
@@ -80,7 +85,9 @@ class GameInterface extends Component {
             paddle1Color,
             paddle2Color,
             ballColor,
+            ballType,
             errorMsgs,
+            passState: this.setBallShape,
             startGame: this.startGame,
             togglePause: this.togglePause,
             setValue: this.setValue,
