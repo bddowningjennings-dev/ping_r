@@ -1,16 +1,49 @@
 import React, { Component } from "react";
 
+import axios from 'axios'
+
+const sleep = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+const initializeState = props => {
+  return {
+  };
+};
+
 class GameCanvas extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
+    this.state = initializeState(this.props);
     this.deadBalls = [];
   }
 
-  componentDidMount = () => {
-    this._initializeGameCanvas();
+  componentDidMount() {
+    // this._initializeGameCanvas();
   };
-
+  async componentWillReceiveProps(nextProps) {
+    const { running } = { ...this.props };
+    if (nextProps.running !== running) {
+      if (nextProps.running) {
+        this._initializeGameCanvas()
+        this.pollData()
+      }
+    }
+  }
+  pollData = async () => {
+    const options = {
+      method: 'GET',
+      url: 'https://wwwforms.suralink.com/pong.php?accessToken=pingPONG',
+    };
+    const { data } = await axios(options);
+    const { gameData } = data;
+    const { newDelay } = gameData;
+console.log(newDelay);
+    await sleep(newDelay);
+    this.pollData();
+  };
   _initializeGameCanvas = () => {
+    const { velocity, paddle1Color, paddle2Color } = { ...this.props }
     // initialize canvas element and bind it to our React class
     this.canvas = this.refs.pong_canvas;
     this.ctx = this.canvas.getContext("2d");
@@ -33,7 +66,7 @@ class GameCanvas extends Component {
       y: 200,
       width: 15,
       height: 80,
-      color: "#FFF",
+      color: paddle1Color,
       velocityY: 2
     });
     this.player2 = new this.GameClasses.Box({
@@ -41,7 +74,7 @@ class GameCanvas extends Component {
       y: 200,
       width: 15,
       height: 80,
-      color: "#FFF",
+      color: paddle2Color,
       velocityY: 2
     });
     this.boardDivider = new this.GameClasses.Box({
@@ -57,8 +90,8 @@ class GameCanvas extends Component {
       width: 15,
       height: 15,
       color: "#FF0000",
-      velocityX: 1,
-      velocityY: 1
+      velocityX: velocity,
+      velocityY: velocity
     });
 
     // start render loop
@@ -67,6 +100,14 @@ class GameCanvas extends Component {
 
   // recursively process game state and redraw canvas
   _renderLoop = () => {
+    const { maxScore, endGame, paddle1Color, paddle2Color, ballColor } = { ...this.props }
+    if (Math.max(this.p1Score, this.p2Score) >= maxScore) {
+      endGame();
+      return
+    };
+    this.player1.color = paddle1Color;
+    this.player2.color = paddle2Color;
+    this.gameBall.color = ballColor
     this._ballCollisionY();
     this._userInput(this.player1);
     this._userInput(this.player2);
@@ -92,6 +133,7 @@ class GameCanvas extends Component {
 
   // watch ball movement in X dimension and handle paddle collisions and score setting/ball resetting, then call _drawRender
   _ballCollisionX = () => {
+    const { velocity, ballColor } = { ...this.props }
     if (
       (this.gameBall.x + this.gameBall.velocityX <=
         this.player1.x + this.player1.width &&
@@ -116,9 +158,9 @@ class GameCanvas extends Component {
         y: this.canvas.height / 2,
         width: 15,
         height: 15,
-        color: "#FF0000",
-        velocityX: 1,
-        velocityY: 1
+        color: ballColor,
+        velocityX: velocity,
+        velocityY: velocity
       });
     } else if (
       this.gameBall.x + this.gameBall.velocityX >
@@ -132,8 +174,8 @@ class GameCanvas extends Component {
         width: 15,
         height: 15,
         color: "#FF0000",
-        velocityX: -1,
-        velocityY: 1
+        velocityX: -velocity,
+        velocityY: velocity
       });
     } else {
       this.gameBall.x += this.gameBall.velocityX;
@@ -150,7 +192,8 @@ class GameCanvas extends Component {
     this._drawBox(this.player1);
     this._drawBox(this.player2);
     this._drawBox(this.boardDivider);
-    this._drawBox(this.gameBall);
+    // this._drawBox(this.gameBall);
+    this._drawCircle(this.gameBall);
   };
 
   // take in game object and draw to canvas
@@ -158,6 +201,36 @@ class GameCanvas extends Component {
     this.ctx.fillStyle = box.color;
     this.ctx.fillRect(box.x, box.y, box.width, box.height);
   };
+
+  _drawCircle = ball => {
+    this.ctx.fillStyle = ball.color;
+    this.ctx.beginPath();
+    this.ctx.arc(ball.x + ball.width/2, ball.y + ball.height/2, ball.width/1.5, ball.height, Math.PI*2, true);
+    this.ctx.fill();
+  }
+
+  _drawStar = ball => {
+    const context = this.ctx;
+    // this.ctx.fillStyle = ball.color;
+    // this.ctx.fillStyle(ball.x, ball.y, ball.width, ball.height)
+        // begin custom shape
+        context.beginPath();
+        // context.moveTo(170, 80);
+        context.bezierCurveTo(130, 100, 130, 150, 230, 150);
+        context.bezierCurveTo(250, 180, 320, 180, 340, 150);
+        context.bezierCurveTo(420, 150, 420, 120, 390, 100);
+        context.bezierCurveTo(430, 40, 370, 30, 340, 50);
+        context.bezierCurveTo(320, 5, 250, 20, 250, 50);
+        context.bezierCurveTo(200, 5, 150, 20, 170, 80);
+    
+        // complete custom shape
+        context.closePath();
+        context.lineWidth = 5;
+        context.strokeStyle = 'blue';
+        context.stroke();
+    context.moveTo(ball.x, ball.y)
+
+  }
 
   // render player 1 score
   _displayScore1 = () => {
@@ -218,6 +291,7 @@ class GameCanvas extends Component {
   })();
 
   render() {
+    
     return (
       <canvas
         id="pong_canvas"
