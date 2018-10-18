@@ -1,0 +1,30 @@
+article .setup {
+  display: flex;
+  flex-direction: column;
+}
+article .setup > div {
+  display: flex;
+  justify-content: space-between;
+  width: 400px;
+  margin-bottom: 5px;
+  cursor: pointer;
+}
+article .setup > div.error {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 400px;
+  margin-bottom: 5px;
+}
+article .setup > input {
+  width: 400px;
+  height: 20px;
+  margin-bottom: 5px;
+  padding: 5px;
+}
+input.hidden {
+  display: none;
+}
+div.color-selected {
+  width: 180px;
+}

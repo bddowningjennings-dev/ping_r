@@ -7,7 +7,27 @@ const sleep = ms => {
 };
 
 const initializeState = props => {
+  const { ballColor, velocity, paddle1Color, paddle2Color } = { ...props }
   return {
+    ball: {
+      width: 15,
+      height: 15,
+      color: ballColor,
+      velocityX: velocity,
+      velocityY: velocity,
+    },
+    paddle1: {
+      width: 15,
+      height: 80,
+      color: paddle1Color,
+      velocityY: 2
+    },
+    paddle2: {
+      width: 15,
+      height: 80,
+      color: paddle2Color,
+      velocityY: 2
+    },
   };
 };
 
@@ -22,28 +42,79 @@ class GameCanvas extends Component {
     // this._initializeGameCanvas();
   };
   async componentWillReceiveProps(nextProps) {
-    const { running } = { ...this.props };
+    const { running } = { ...this.props }
+
     if (nextProps.running !== running) {
       if (nextProps.running) {
         this._initializeGameCanvas()
-        this.pollData()
+        this.pollData(nextProps.running)
       }
     }
+
+
   }
-  pollData = async () => {
+  pollData = async (running) => {
+    if (!running) return
     const options = {
       method: 'GET',
       url: 'https://wwwforms.suralink.com/pong.php?accessToken=pingPONG',
     };
     const { data } = await axios(options);
     const { gameData } = data;
-    const { newDelay } = gameData;
+    let { newDelay, ball, paddle1, paddle2 } = gameData;
+
+
+//     paddle1 = {
+//       ...paddle1,
+//       color: paddle1.color.hex,
+//     }
+//     paddle2 = {
+//       ...paddle2,
+//       color: paddle2.color.hex ,
+//     }
+//     ball = {
+//       ...ball,
+//       color: ball.color.hex || this.props.ballColor,
+//     }
+//     this.setState(prevState => ({ ...prevState, ball, paddle1, paddle2 }));
 console.log(newDelay);
+console.log(gameData);
+// this.updateBall(ball);
+// this.updatePlayer1(paddle1);
+// this.updatePlayer2(paddle2);
+
+
+
     await sleep(newDelay);
-    this.pollData();
+    this.pollData(this.props.running);
   };
+
+
+
+
+
+updateBall = ball => {
+  if (ball.color && ball.color.hex) this.gameBall.color = ball.color.hex;
+  if (ball.velocityX) this.gameBall.velocityX = ball.velocityX;
+  if (ball.velocityY) this.gameBall.velocityY = ball.velocityY;
+  if (ball.width) this.gameBall.width = ball.width;
+  if (ball.height) this.gameBall.height = ball.height;
+}
+updatePlayer1 = paddle1 => {
+  if (paddle1.color && paddle1.color.hex) this.player1.color = paddle1.color.hex;
+  if (paddle1.height) this.player1.height = paddle1.height;
+  if (paddle1.width) this.player1.width = paddle1.width;
+  if (paddle1.velocityY) this.player1.velocityY = paddle1.velocityY;
+}
+updatePlayer2 = paddle2 => {
+  if (paddle2.color && paddle2.color.hex) this.player2.color = paddle2.color.hex;
+  if (paddle2.height) this.player2.height = paddle2.height;
+  if (paddle2.width) this.player2.width = paddle2.width;
+  if (paddle2.velocityY) this.player2.velocityY = paddle2.velocityY;
+}
   _initializeGameCanvas = () => {
-    const { velocity, paddle1Color, paddle2Color } = { ...this.props }
+    const { velocity, paddle1Color, paddle2Color, ballColor } = { ...this.props };
+    const { ball, paddle1, paddle2 } = { ...this.state };
     // initialize canvas element and bind it to our React class
     this.canvas = this.refs.pong_canvas;
     this.ctx = this.canvas.getContext("2d");
@@ -67,7 +138,8 @@ console.log(newDelay);
       width: 15,
       height: 80,
       color: paddle1Color,
-      velocityY: 2
+      velocityY: 2,
+      ...paddle1,
     });
     this.player2 = new this.GameClasses.Box({
       x: 725,
@@ -75,7 +147,8 @@ console.log(newDelay);
       width: 15,
       height: 80,
       color: paddle2Color,
-      velocityY: 2
+      velocityY: 2,
+      ...paddle2,
     });
     this.boardDivider = new this.GameClasses.Box({
       x: this.canvas.width / 2 - 2.5,
@@ -89,9 +162,10 @@ console.log(newDelay);
       y: this.canvas.height / 2,
       width: 15,
       height: 15,
-      color: "#FF0000",
+      color: ballColor,
       velocityX: velocity,
-      velocityY: velocity
+      velocityY: velocity,
+      ...ball,
     });
 
     // start render loop
@@ -100,14 +174,15 @@ console.log(newDelay);
 
   // recursively process game state and redraw canvas
   _renderLoop = () => {
-    const { maxScore, endGame, paddle1Color, paddle2Color, ballColor } = { ...this.props }
+    const { maxScore, endGame, paddle1Color, paddle2Color, ballColor, paused } = { ...this.props }
+    if (paused) return this.frameId = window.requestAnimationFrame(this._renderLoop);
     if (Math.max(this.p1Score, this.p2Score) >= maxScore) {
       endGame();
       return
     };
     this.player1.color = paddle1Color;
     this.player2.color = paddle2Color;
-    this.gameBall.color = ballColor
+    this.gameBall.color = ballColor;
     this._ballCollisionY();
     this._userInput(this.player1);
     this._userInput(this.player2);
@@ -173,7 +248,7 @@ console.log(newDelay);
         y: this.canvas.height / 2,
         width: 15,
         height: 15,
-        color: "#FF0000",
+        color: ballColor,
         velocityX: -velocity,
         velocityY: velocity
       });
