@@ -126,7 +126,6 @@ class GameCanvas extends Component {
   }
   launchTurtle = async () => {
     const sign = () => (Math.random() <= 0.5 ? -1 : 1);
-    console.log('sign', sign())
     this.turtle.x = Math.random() * (this.canvas.width - 20) + 20;
     this.turtle.y = Math.random() * (this.canvas.height - 20) + 20;
     this.turtle.velocityX = sign() * (Math.random() * (2) + 2);
@@ -215,7 +214,12 @@ class GameCanvas extends Component {
 
   // recursively process game state and redraw canvas
   _renderLoop = () => {
-    const { maxScore, endGame, paused } = { ...this.props }
+    const { maxScore, endGame, paused, ai, level } = { ...this.props }
+
+    let mod = 1;
+    if (level === 'hard') mod = 4;
+    if (level === 'easy') mod = 0.5;
+    
     if (paused) return this.frameId = window.requestAnimationFrame(this._renderLoop);
     if (Math.max(this.p1Score, this.p2Score) >= maxScore) {
       endGame();
@@ -225,9 +229,9 @@ class GameCanvas extends Component {
     // this.player2.color = paddle2Color;
     // this.gameBall.color = ballColor;
     this._ballCollisionY();
-    this._userInput(this.player1);
-    this._userInput(this.player2);
-    this._aiInput(this.player2);
+    this._userInput();
+    // this._userInput(this.player2);
+    ai && this._aiInput(mod);
     this.frameId = window.requestAnimationFrame(this._renderLoop);
   };
 
@@ -384,22 +388,16 @@ class GameCanvas extends Component {
     this.ctx.fillText(this.p2Score, this.canvas.width / 2 + 33, 30);
   };
 
-  _aiInput = () => {
-    const { ai, level } = { ...this.props }
-    let mod = 1;
-    if (level === 'hard') mod = 3;
-    if (level === 'easy') mod = 0.5;
-    if (ai) {
-      if (this.gameBall.y > this.player2.y) {
-        if (
-          this.player2.y + this.player2.height + this.player2.velocityY <
-          this.canvas.height
-        )
-          this.player2.y += this.player2.velocityY * mod;
-      } else if (this.gameBall.y < this.player2.y) {
-        if (this.player2.y - this.player2.velocityY > 0)
-          this.player2.y -= this.player2.velocityY * mod;
-      }
+  _aiInput = mod => {
+    if (this.gameBall.y > this.player2.y) {
+      if (
+        this.player2.y + this.player2.height + this.player2.velocityY <
+        this.canvas.height
+      )
+        this.player2.y += (this.player2.velocityY * mod);
+    } else if (this.gameBall.y < this.player2.y) {
+      if (this.player2.y - this.player2.velocityY > 0)
+        this.player2.y -= (this.player2.velocityY * mod);
     }
   }
 
