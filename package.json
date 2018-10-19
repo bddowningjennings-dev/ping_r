@@ -1,6 +1,6 @@
 {
   "name": "ping_r",
-  "description": "React bound game of Pong using canvas.",
+  "description": "Tech Assessment",
   "version": "0.1.0",
   "private": true,
   "author": "Christopher Lemke",
