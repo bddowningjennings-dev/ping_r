@@ -11,5 +11,8 @@
   background-color: aliceblue;
 }
 .GameCanvas button:hover {
-  background-color: rgba(194, 183, 183, 0.486);
+  /* background-color: rgba(194, 183, 183, 0.486); */
+  background-color: rgba(100, 231, 106, 0.801);
+  color: white;
+
 }

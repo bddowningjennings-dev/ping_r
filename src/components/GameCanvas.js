@@ -40,8 +40,8 @@ class GameCanvas extends Component {
     const { gameData } = data;
     let { newDelay, ball, paddle1, paddle2 } = gameData;
 
-    console.log(newDelay);
-    console.log(gameData);
+    // console.log(newDelay);
+    // console.log(gameData);
     this.updateBall(ball);
     this.updatePlayer1(paddle1);
     this.updatePlayer2(paddle2);
@@ -59,7 +59,6 @@ class GameCanvas extends Component {
     } else {
       size = 15;
     };
-console.log(paddle1Color, paddle2Color, ballColor, velocity)
     const basePlayer1 = {
       x: 10,
       y: 200,
@@ -125,6 +124,24 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
     if (paddle2.width) this.player2.width = paddle2.width;
     if (paddle2.velocityY) this.player2.velocityY = paddle2.velocityY;
   }
+  launchTurtle = async () => {
+    const sign = () => (Math.random() <= 0.5 ? -1 : 1);
+    console.log('sign', sign())
+    this.turtle.x = Math.random() * (this.canvas.width - 20) + 20;
+    this.turtle.y = Math.random() * (this.canvas.height - 20) + 20;
+    this.turtle.velocityX = sign() * (Math.random() * (2) + 2);
+    this.turtle.velocityY = sign() * (Math.random() * (2) + 2);
+    await sleep(1600);
+    const { turtlesAllTheWayDown } = { ...this.state }
+    if (turtlesAllTheWayDown) this.launchTurtle()
+  }
+  toggleTurtlesAllTheWayDown = e => {
+    e && e.preventDefault()
+    this.setState(prevState => ({ ...prevState, turtlesAllTheWayDown: !prevState.turtlesAllTheWayDown }), () => {
+      const { turtlesAllTheWayDown } = { ...this.state }
+      if (turtlesAllTheWayDown) this.launchTurtle()
+    })
+  }
   _initializeGameCanvas = () => {
     const { velocity, paddle1Color, paddle2Color, ballColor, ballType } = { ...this.props };
     let size = ballType.split(' ')[0];
@@ -183,7 +200,15 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
       velocityX: velocity,
       velocityY: velocity,
     });
-
+    this.turtle = new this.GameClasses.Box({
+      x: this.canvas.width + 120,
+      y: this.canvas.height + 120,
+      width: 12,
+      height: 12,
+      color: '#8DB86B',
+      velocityX: -0.2,
+      velocityY: -0.2,
+    });
     // start render loop
     this._renderLoop();
   };
@@ -202,6 +227,7 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
     this._ballCollisionY();
     this._userInput(this.player1);
     this._userInput(this.player2);
+    this._aiInput(this.player2);
     this.frameId = window.requestAnimationFrame(this._renderLoop);
   };
 
@@ -225,22 +251,38 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
   // watch ball movement in X dimension and handle paddle collisions and score setting/ball resetting, then call _drawRender
   _ballCollisionX = () => {
     const { velocity } = { ...this.props }
-    if (
-      (this.gameBall.x + this.gameBall.velocityX <=
-        this.player1.x + this.player1.width &&
-        this.gameBall.y + this.gameBall.velocityY > this.player1.y &&
-        this.gameBall.y + this.gameBall.velocityY <=
-          this.player1.y + this.player1.height) ||
-      (this.gameBall.x + this.gameBall.width + this.gameBall.velocityX >=
-        this.player2.x &&
-        this.gameBall.y + this.gameBall.velocityY > this.player2.y &&
-        this.gameBall.y + this.gameBall.velocityY <=
-          this.player2.y + this.player2.height)
-    ) {
+    let hit = 'none';
+    if ((this.gameBall.x + this.gameBall.velocityX <=
+        this.player1.x + this.player1.width) &&
+        (this.gameBall.y + this.gameBall.velocityY > this.player1.y) &&
+        (this.gameBall.y + this.gameBall.velocityY <=
+          this.player1.y + this.player1.height)) {
+            hit = 'player1';
+          }
+    if ((this.gameBall.x + this.gameBall.width + this.gameBall.velocityX >= this.player2.x) && 
+        (this.gameBall.y + this.gameBall.velocityY > this.player2.y) &&
+        (this.gameBall.y + this.gameBall.velocityY <= this.player2.y + this.player2.height)) {
+            hit = 'player2';
+    }
+    if (hit !== 'none') {
       this.gameBall.velocityX = this.gameBall.velocityX * -1;
+      if (hit === 'player1') {
+        if (87 in this.keys) {
+          this.gameBall.velocityY -= this.player1.velocityY * 0.25;
+        } else if (83 in this.keys) {
+          this.gameBall.velocityY += this.player1.velocityY * 0.25;
+        }
+      } else if (hit === 'player2') {
+        if (38 in this.keys) {
+          this.gameBall.velocityY -= this.player2.velocityY * 0.25;
+        } else if (40 in this.keys) {
+          this.gameBall.velocityY += this.player2.velocityY * 0.25;
+        }
+      }
+
     } else if (
       this.gameBall.x + this.gameBall.velocityX <
-      this.player1.x - 15
+      this.player1.x - this.player1.width
     ) {
       this.p2Score += 1;
       this.gameBall.x = this.canvas.width/2;
@@ -278,6 +320,18 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
       this.gameBall.x += this.gameBall.velocityX;
       this.gameBall.y += this.gameBall.velocityY;
     }
+    if ((this.turtle.x < this.canvas.width + 80 && this.turtle.x > -80) && (this.turtle.y < this.canvas.height + 80 && this.turtle.y > -80)) {
+      this.turtle.x += this.turtle.velocityX;
+      this.turtle.y += this.turtle.velocityY;
+    }
+
+    if ((this.turtle.x < this.gameBall.x + this.gameBall.width + 60 && this.turtle.x > this.gameBall.x - 60) && (this.turtle.y < this.gameBall.y + this.gameBall.height + 60 && this.turtle.y > this.gameBall.y - 60)) {
+      this.gameBall.velocityX = this.turtle.velocityX;
+      this.gameBall.velocityY = this.turtle.velocityY;
+      // this.gameBall.x = this.turtle.x;
+      // this.gameBall.y = this.turtle.y;
+    }
+
     this._drawRender();
   };
 
@@ -291,6 +345,7 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
     this._drawBox(this.player1);
     this._drawBox(this.player2);
     this._drawBox(this.boardDivider);
+    this._drawBox(this.turtle);
     if (shape === 'block') {
       this._drawBox(this.gameBall);
     } else {
@@ -329,8 +384,28 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
     this.ctx.fillText(this.p2Score, this.canvas.width / 2 + 33, 30);
   };
 
+  _aiInput = () => {
+    const { ai, level } = { ...this.props }
+    let mod = 1;
+    if (level === 'hard') mod = 3;
+    if (level === 'easy') mod = 0.5;
+    if (ai) {
+      if (this.gameBall.y > this.player2.y) {
+        if (
+          this.player2.y + this.player2.height + this.player2.velocityY <
+          this.canvas.height
+        )
+          this.player2.y += this.player2.velocityY * mod;
+      } else if (this.gameBall.y < this.player2.y) {
+        if (this.player2.y - this.player2.velocityY > 0)
+          this.player2.y -= this.player2.velocityY * mod;
+      }
+    }
+  }
+
   //track user input
   _userInput = () => {
+    const { ai } = { ...this.props }
     if (87 in this.keys) {
       if (this.player1.y - this.player1.velocityY > 0)
         this.player1.y -= this.player1.velocityY;
@@ -341,16 +416,17 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
       )
         this.player1.y += this.player1.velocityY;
     }
-
-    if (38 in this.keys) {
-      if (this.player2.y - this.player2.velocityY > 0)
-        this.player2.y -= this.player2.velocityY;
-    } else if (40 in this.keys) {
-      if (
-        this.player2.y + this.player2.height + this.player2.velocityY <
-        this.canvas.height
-      )
-        this.player2.y += this.player2.velocityY;
+    if (!ai) {
+      if (38 in this.keys) {
+        if (this.player2.y - this.player2.velocityY > 0)
+          this.player2.y -= this.player2.velocityY;
+      } else if (40 in this.keys) {
+        if (
+          this.player2.y + this.player2.height + this.player2.velocityY <
+          this.canvas.height
+        )
+          this.player2.y += this.player2.velocityY;
+      }
     }
   };
 
@@ -371,6 +447,19 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
 
   render() {
     const { running } = { ...this.props }
+    const { turtlesAllTheWayDown } = { ...this.state }
+    const Aux = props => props.children
+    let buttons
+    let launchTurtleText = turtlesAllTheWayDown ? 'Send the Gravity Turtle Away on an Errand' : 'Launch the Gravity Turtle'
+    if (running) {
+      buttons = (
+        <Aux>
+          <button onClick={this.resetData}>Reset Paddles and Ball</button>
+          <button onClick={this.toggleTurtlesAllTheWayDown}>{launchTurtleText}</button>
+        </Aux>
+
+      )
+    }
     return (
       <div className='GameCanvas'>
         <canvas
@@ -380,7 +469,7 @@ console.log(paddle1Color, paddle2Color, ballColor, velocity)
           height="500"
           style={{ background: "#12260e", border: "4px solid #FFF" }}
         />
-        {running && <button onClick={this.resetData}>Reset Paddles and Ball</button>}
+        { buttons }
       </div>
     );
   }

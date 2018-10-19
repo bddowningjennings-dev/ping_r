@@ -3,13 +3,28 @@ import React, { Component } from 'react';
 import './GameControls.css'
 
 import SelectInput from '../customInputs/SelectInput/SelectInput'
+
+const ballTypeOptions = [
+    { name: "Small Block", value: "small block" },
+    { name: "Large Block", value: "large block" },
+    { name: "Small Ball", value: "small ball" },
+    { name: "Large Ball", value: "large ball" },
+]
+const aiLevelOptions = [
+    { name: 'Easy', value: 'easy' },
+    { name: 'Normal', value: 'normal' },
+    { name: 'Hard', value: 'hard' },
+]
 // const GameControls = props => {
 class GameControls extends Component {
     render() {
 
-        const { startGame, setValue, setColor, running, paused, togglePause, errorMsgs } = { ...this.props }
+        const { startGame, setValue, setColor, running, errorMsgs } = { ...this.props }
         const { paddle1Color, paddle2Color, ballColor, passState, ballType } = { ...this.props }
+        const { ai, toggleAI, paused, togglePause, level } = { ...this.props }
+
         const pauseText = paused ? 'Resume Game' : 'Pause Game'
+        const aiText = ai ? `AI Player 2` : `Human Player 2`
         const errorContent = (
             <div className='error'>
                 { errorMsgs.map((err, i) => {
@@ -71,15 +86,19 @@ class GameControls extends Component {
                     value={ballType}
                     label='Select ball type: '
                     classNames='ballType'
-                    options={
-                        [
-                            { name: "small block", value: "small block" },
-                            { name: "large block", value: "large block" },
-                            { name: "small ball", value: "small ball" },
-                            { name: "large ball", value: "large ball" },
-                        ]
-                    }
+                    options={ballTypeOptions}
                 />
+                <button className='ai-btn' onClick={toggleAI}>{aiText}</button>
+                { ai &&
+                    <SelectInput
+                        name={'level'}
+                        passState={passState}
+                        value={level}
+                        label='Select AI Level: '
+                        classNames='ballType'
+                        options={aiLevelOptions}
+                    />
+                }
                 <button className='start-btn' onClick={startGame}>Start Game</button>
             </div>
         )

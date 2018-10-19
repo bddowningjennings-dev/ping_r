@@ -6,12 +6,19 @@
   border: none;
   padding: 8px;
   cursor: pointer;
+  margin-bottom: 5px;
 }
-.GameControls button.start-btn, button.displaying, button.pause-btn {
+.GameControls button.ai-btn {
+  margin-top: -7px;
+}
+.GameControls button.start-btn, button.displaying, button.pause-btn, button.ai-btn {
+  /* background-color: rgb(211, 213, 214); */
   background-color: aliceblue;
+  
 }
-.GameControls button.start-btn:hover, button.displaying:hover, button.pause-btn:hover {
-  background-color: rgba(194, 183, 183, 0.486);
+.GameControls button:hover {
+  background-color: rgba(100, 231, 106, 0.801);
+  color: white;
 }
 article .setup {
   display: flex;
@@ -54,4 +61,8 @@ div.color-selected {
 }
 .pause-btn {
   width: 100%;
+}
+
+.SelectInput.ballType {
+  margin-top: -15px;
 }

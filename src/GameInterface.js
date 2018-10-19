@@ -15,6 +15,8 @@ const initializeState = props => {
         ballColor: '#FFF',
         ballType: 'small block',
         errorMsgs: [],
+        ai: false,
+        level: 'normal',
     }
 }
 
@@ -24,51 +26,57 @@ class GameInterface extends Component {
         this.state = initializeState(this.props);
     }
     startGame = () => {
-        this.setState(prevState => ({ ...prevState, running: true }))
+        this.setState(prevState => ({ ...prevState, running: true }));
     }
     togglePause = () => {
-        this.setState(prevState => ({ ...prevState, paused: !prevState.paused }))
+        this.setState(prevState => ({ ...prevState, paused: !prevState.paused }));
     }
     endGame = () => {
-        this.setState(prevState => ({ ...prevState, running: false }))
+        this.setState(prevState => ({ ...prevState, running: false }));
+    }
+    toggleAI = () => {
+        this.setState(prevState => ({ ...prevState, ai: !prevState.ai }));
     }
     setValue = e => {
-        e && e.preventDefault()
-        const { target } = { ...e }
-        let value = Number(target.value), others, newError
-        const { errorMsgs } = { ...this.state }
+        e && e.preventDefault();
+        const { target } = { ...e };
+        let value = Number(target.value), others, newError;
+        const { errorMsgs } = { ...this.state };
         if (`${[target.name]}` === 'maxScore') {
             if (value <= 0 || isNaN(value)) {
-                value = 10
-                others = errorMsgs.filter(msg => msg && msg.type !== 'maxScore')
-                newError = {type: 'maxScore', msg: `Out of bounds max score value (allowed > 0) - setting to default of ${value}`}
+                value = 10;
+                others = errorMsgs.filter(msg => msg && msg.type !== 'maxScore');
+                newError = {type: 'maxScore', msg: `Out of bounds max score value (allowed > 0) - setting to default of ${value}`};
             } else {
-                others = errorMsgs.filter(msg => msg && msg.type !== 'maxScore')
-            }
+                others = errorMsgs.filter(msg => msg && msg.type !== 'maxScore');
+            };
         }
         if (`${[target.name]}` === 'velocity') {
             if (value < 1 || value > 3 || isNaN(value)) {
                 value = 1
                 others = errorMsgs.filter(msg => msg && msg.type !== 'velocity')
-                newError = {type: 'velocity', msg: `Out of bounds velocity value (allowed 1-3) - setting to default of ${value}`}
+                newError = {type: 'velocity', msg: `Out of bounds velocity value (allowed 1-3) - setting to default of ${value}`};
             } else {
-                others = errorMsgs.filter(msg => msg && msg.type !== 'velocity')
-            }
-        }
-        this.setState(prevState => ({ ...prevState, [target.name]: value, errorMsgs: [newError, ...others] }))
+                others = errorMsgs.filter(msg => msg && msg.type !== 'velocity');
+            };
+        };
+        this.setState(prevState => ({ ...prevState, [target.name]: value, errorMsgs: [newError, ...others] }));
     }
     setColor = e => {
-        e && e.preventDefault()
-        const { target } = { ...e }
-        this.setState(prevState => ({ ...prevState, [target.name]: target.value }))
+        e && e.preventDefault();
+        const { target } = { ...e };
+        this.setState(prevState => ({ ...prevState, [target.name]: target.value }));
     }
-    setBallShape = (name, state) => {
-        this.setState(prevState => ({ ...prevState, [name]: state.value }))
+    setSelectInput = (name, state) => {
+        this.setState(prevState => ({ ...prevState, [name]: state.value }));
     }
     render() {
-        const { maxScore, velocity, paddle1Color, paddle2Color, ballColor, ballType } = { ...this.state };
-        const { running, paused, errorMsgs } = { ...this.state };
+        const { velocity, paddle1Color, paddle2Color, ballColor, ballType } = { ...this.state };
+        const {  ai, level } = { ...this.state }
+        const { maxScore, running, paused, errorMsgs } = { ...this.state };
         const gameCanvasProps = {
+            ai,
+            level,
             running,
             velocity,
             paddle1Color,
@@ -80,6 +88,8 @@ class GameInterface extends Component {
             endGame: this.endGame,
         };
         const gameControlsProps = {
+            ai,
+            level,
             running,
             paused,
             paddle1Color,
@@ -87,7 +97,8 @@ class GameInterface extends Component {
             ballColor,
             ballType,
             errorMsgs,
-            passState: this.setBallShape,
+            toggleAI: this.toggleAI,
+            passState: this.setSelectInput,
             startGame: this.startGame,
             togglePause: this.togglePause,
             setValue: this.setValue,
