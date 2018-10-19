@@ -1,5 +1,5 @@
 {
-  "name": "pong_r",
+  "name": "ping_r",
   "description": "React bound game of Pong using canvas.",
   "version": "0.1.0",
   "private": true,
